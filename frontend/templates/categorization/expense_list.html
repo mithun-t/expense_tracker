@@ -1,0 +1,172 @@
+<!-- categorization/templates/categorization/expense_list.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #chart_div {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+    </style>
+    <!-- Load Google Charts library -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+    <h1>Expense List</h1>
+
+    <form method="get" action="{% url 'expense_list' %}">
+        <label for="category">Category:</label>
+        <select name="category" id="category">
+            <option value="">All</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="subcategory">Subcategory:</label>
+        <select name="subcategory" id="subcategory">
+            <option value="">All</option>
+            {% for subcategory in subcategories %}
+                <option value="{{ subcategory.id }}" {% if subcategory.id|stringformat:"s" == selected_subcategory %}selected{% endif %}>{{ subcategory.name }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Amount</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.category.name }}</td>
+                <td>{{ expense.subcategory.name }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Grand Total</strong></td>
+                <td><strong>{{ grand_total_expenses }}</strong></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h2>Category Totals</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for total in category_totals %}
+            <tr>
+                <td>{{ total.category__name }}</td>
+                <td>{{ total.total_amount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><strong>Grand Total</strong></td>
+                <td><strong>{{ grand_total_category }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h2>Subcategory Totals</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Subcategory</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for total in subcategory_totals %}
+            <tr>
+                <td>{{ total.subcategory__name }}</td>
+                <td>{{ total.total_amount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><strong>Grand Total</strong></td>
+                <td><strong>{{ grand_total_subcategory }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h2>Expenses by Subcategory</h2>
+    <div id="chart_div"></div>
+
+    <script>
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Subcategory');
+            data.addColumn('number', 'Total Amount');
+            
+            var chartData = [
+                {% for total in subcategory_totals %}
+                    ['{{ total.subcategory__name }}', {{ total.total_amount }}],
+                {% endfor %}
+            ];
+
+            data.addRows(chartData);
+
+            var options = {
+                title: 'Expenses by Subcategory',
+                width: '100%',
+                height: 400,
+                legend: { position: 'top' },
+                bar: { groupWidth: '75%' },
+                hAxis: {
+                    title: 'Total Amount',
+                    minValue: 0
+                },
+                vAxis: {
+                    title: 'Subcategory'
+                }
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</body>
+</html>

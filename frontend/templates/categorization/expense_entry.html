@@ -1,0 +1,15 @@
+<!-- categorization/templates/categorization/expense_entry.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Enter Expense</title>
+  </head>
+  <body>
+    <h1>Enter Expense</h1>
+    <form method="POST">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Save Expense</button>
+    </form>
+  </body>
+</html>
