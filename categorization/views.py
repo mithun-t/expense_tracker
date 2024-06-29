@@ -1,16 +1,20 @@
-# categorization/views.py
-
 from django.shortcuts import render, redirect
 from django.db.models import Sum
 from decimal import Decimal
 from .models import Expense, Category, SubCategory
 from .forms import ExpenseForm
 
+def home(request):
+    return render(request,'home.html')
+
+def category_list(request):
+    return render(request,'categorization/category_list.html')
+
 def expense_entry(request):
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save() 
             return redirect('expense_list')  # Redirect to expense list view after saving
     else:
         form = ExpenseForm()
